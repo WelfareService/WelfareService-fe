@@ -115,17 +115,19 @@ const SignUp = () => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev === null) return prev;
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate('/login');
-          return 0;
-        }
+        if (prev <= 1) return 0;
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [createdUser, navigate]);
+  }, [createdUser]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      navigate('/login');
+    }
+  }, [countdown, navigate]);
 
   return (
     <div className="signup-wrapper">

@@ -38,7 +38,7 @@ const Login = () => {
       localStorage.setItem('userId', String(fetched.id));
 
       // 로그인 성공 시 메인 페이지로 이동
-      navigate('/main', { replace: true });
+      navigate('/chat', { replace: true });
     } catch {
       setError(text.error);
       setUser(null);
