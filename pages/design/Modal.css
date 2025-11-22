@@ -1,0 +1,104 @@
+/* 뒤 배경 (오버레이) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(17, 24, 39, 0.5);  /* 어두운 반투명 */
+  backdrop-filter: blur(6px);        /* 부드러운 블러 */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+/* 모달 박스 */
+.modal-box {
+  background: #ffffff;
+  width: 420px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+
+  border-radius: 24px;
+  padding: 24px 22px 20px;
+  position: relative;
+
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.04);
+
+  animation: modalPop 0.25s ease-out;
+}
+
+/* 상단 구분선 느낌 */
+.modal-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: #f1f5f9;
+}
+
+/* 닫기 버튼 */
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+
+  font-size: 18px;
+  background: #f1f5f9;
+  border: none;
+  cursor: pointer;
+  color: #475569;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: #e0e7ff;
+  color: #4f46e5;
+  transform: scale(1.05);
+}
+
+/* 내용 영역 */
+.modal-content {
+  margin-top: 20px;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+/* 스크롤바 스타일 */
+.modal-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 6px;
+}
+
+/* 애니메이션 */
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
