@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { RegisterUserPayload, User } from '../types/user';
-import type { Message } from '../types/chat';
+import type { ChatResponse } from '../types/chat';
+import type { MarkerResponse } from '../types/marker';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -8,7 +9,12 @@ const api = axios.create({
 });
 
 export const registerUser = async (payload: RegisterUserPayload): Promise<User> => {
-  const { data } = await api.post<User>('/users', payload);
+  const { data } = await api.post<User>('/users/register', payload);
+  return data;
+};
+
+export const loginUser = async (name: string): Promise<User> => {
+  const { data } = await api.post<User>('/users/login', { name });
   return data;
 };
 
@@ -17,12 +23,12 @@ export const fetchUser = async (id: number): Promise<User> => {
   return data;
 };
 
-export const fetchChatHistory = async (): Promise<Message[]> => {
-  const { data } = await api.get<Message[]>('/chat/history');
+export const sendChatMessage = async (userId: number, message: string): Promise<ChatResponse> => {
+  const { data } = await api.post<ChatResponse>('/recommendations/chat', { userId, message });
   return data;
 };
 
-export const sendChatMessage = async (message: string): Promise<Message> => {
-  const { data } = await api.post<Message>('/chat/send', { message });
+export const fetchBenefitLocations = async (): Promise<MarkerResponse> => {
+  const { data } = await api.get<MarkerResponse>('/benefits/locations');
   return data;
 };

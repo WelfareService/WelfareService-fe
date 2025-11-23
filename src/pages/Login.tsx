@@ -1,16 +1,16 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUser } from '../api/client';
 import type { User } from '../types/user';
 import '../style/Login.css';
 
 const text = {
-  welcome: '안녕하세요! 로그인할 ID를 입력해주세요.',
-  error: '사용자를 찾지 못했어요. ID를 확인해주세요.',
+  welcome: '안녕하세요! 로그인할 ID를 입력해 주세요.',
+  error: '사용자를 찾지 못했어요. ID를 확인해 주세요.',
   successPrefix: '환영합니다,',
   placeholder: '회원 ID 입력',
   login: '로그인',
-  loading: '조회 중…',
+  loading: '확인 중...',
   signup: '회원가입',
   heroTitle: 'Support Assistant',
   heroSub: 'Here to help you',
@@ -37,7 +37,6 @@ const Login = () => {
       setUser(fetched);
       localStorage.setItem('userId', String(fetched.id));
 
-      // 로그인 성공 시 메인 페이지로 이동
       navigate('/chat', { replace: true });
     } catch {
       setError(text.error);

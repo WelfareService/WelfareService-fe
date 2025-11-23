@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import ChatBubble from '../components/ChatBubble';
-import { fetchChatHistory, sendChatMessage } from '../api/client';
-import type { Message } from '../types/chat';
+import Map from '../components/Map';
+import { fetchBenefitLocations, sendChatMessage } from '../api/client';
+import type { Message, RecommendationItem } from '../types/chat';
+import type { Marker, MarkerResponse } from '../types/marker';
 import '../style/Chat.css';
 
 const Chat = () => {
@@ -10,27 +12,41 @@ const Chat = () => {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [locations, setLocations] = useState<Record<string, { lat: number; lng: number }>>({});
+  const [markers, setMarkers] = useState<Marker[]>([]);
+  const [latestRecommendations, setLatestRecommendations] = useState<RecommendationItem[]>([]);
+  const [showMap, setShowMap] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    let active = true;
+    const storedId = Number(localStorage.getItem('userId'));
+    if (storedId) {
+      setUserId(storedId);
+    } else {
+      setError('로그인 후 이용해주세요.');
+    }
 
-    const loadHistory = async () => {
+    setLoadingHistory(false); // 히스토리 API 없음
+
+    const loadLocations = async () => {
       try {
-        const data = await fetchChatHistory();
-        if (active) setMessages(data);
+        const res: MarkerResponse = await fetchBenefitLocations();
+        const map: Record<string, { lat: number; lng: number }> = {};
+        res.markers.forEach((m) => {
+          if (m.id && m.lat && m.lng) {
+            map[m.id] = { lat: m.lat, lng: m.lng };
+          }
+        });
+        setLocations(map);
+        setMarkers(res.markers);
       } catch {
-        if (active) setError('대화 내역을 불러오지 못했습니다. 다시 시도해주세요.');
-      } finally {
-        if (active) setLoadingHistory(false);
+        // 위치 데이터가 없어도 채팅은 진행 가능
       }
     };
 
-    loadHistory();
-    return () => {
-      active = false;
-    };
+    loadLocations();
   }, []);
 
   useEffect(() => {
@@ -46,6 +62,11 @@ const Chat = () => {
   };
 
   const sendFlow = async (text: string) => {
+    if (!userId) {
+      setError('로그인 후 이용해주세요.');
+      return;
+    }
+
     const userMessage: Message = { sender: 'user', text };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
@@ -53,17 +74,45 @@ const Chat = () => {
     setSending(true);
 
     try {
-      const botMessage = await sendChatMessage(text);
+      const botMessage = await sendChatMessage(userId, text);
+      const top3: RecommendationItem[] = (botMessage?.recommendations ?? [])
+        .slice(0, 3)
+        .map((item) => ({
+          ...item,
+          location:
+            item.location ??
+            (item.benefitId && locations[item.benefitId]
+              ? { lat: locations[item.benefitId].lat, lng: locations[item.benefitId].lng }
+              : undefined),
+        }));
+
       setMessages((prev) => [
         ...prev,
-        botMessage ?? { sender: 'bot', text: '응답을 불러오지 못했습니다.' },
+        {
+          sender: 'bot',
+          text: botMessage?.assistantMessage ?? '응답을 불러오지 못했습니다.',
+          recommendations: top3,
+        },
       ]);
+      setLatestRecommendations(top3);
     } catch {
       setError('메시지 전송에 실패했습니다. 네트워크 상태를 확인해주세요.');
     } finally {
       setSending(false);
     }
   };
+
+  const mapRecommendations: RecommendationItem[] =
+    latestRecommendations.length > 0
+      ? latestRecommendations
+      : markers.slice(0, 3).map((m) => ({
+        benefitId: m.id,
+        title: m.title,
+        category: '위치',
+        score: 0,
+        summary: '지도에 표시됩니다.',
+        location: { lat: m.lat, lng: m.lng },
+      }));
 
   return (
     <div className="chat-page">
@@ -72,11 +121,16 @@ const Chat = () => {
           <div className="header-left">
             <div className="assistant-avatar">💜</div>
             <div className="header-text">
-              <h1>복지피티</h1>
-              <p>필요한 복지 정보를 함께 찾아요</p>
+              <h1>복지 도우미</h1>
+              <p>필요한 복지 정보를 함께 찾아드릴게요</p>
             </div>
           </div>
-          <button className="view-map" type="button">
+          <button
+            className="view-map"
+            type="button"
+            onClick={() => setShowMap(true)}
+            disabled={mapRecommendations.length === 0}
+          >
             지도 보기
           </button>
         </header>
@@ -112,6 +166,12 @@ const Chat = () => {
           <p className="helper-text">Enter 키로 전송할 수 있어요.</p>
         </footer>
       </div>
+
+      <Map
+        visible={showMap}
+        onClose={() => setShowMap(false)}
+        recommendations={mapRecommendations}
+      />
     </div>
   );
 };
