@@ -9,6 +9,10 @@
 
 ---
 
+# FE/BE Repository
+- https://github.com/WelfareService/WelfareService-fe
+- https://github.com/WelfareService/WelfareService-be
+
 # 📝 서비스 요약
 청년의 일상 대화를 분석하여 **취약 신호를 자동 탐지**하고, 개인 상황에 최적화된 복지 혜택을 **선제적으로 추천하는 AI 기반 대화형 복지 안내 서비스입니다.
 
