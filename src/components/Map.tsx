@@ -49,12 +49,23 @@ const Map = ({ visible, onClose, recommendations, appKey = DEFAULT_APP_KEY }: Ma
         const container = mapContainerRef.current;
         if (!container) return;
 
+        const offsets = [
+          { lat: 0, lng: 0 },
+          { lat: 0.00005, lng: 0 },
+          { lat: -0.00005, lng: 0.00005 },
+        ];
+
         const positions = recommendations
           .filter((rec) => rec.location && rec.location.lat && rec.location.lng)
-          .map((rec) => ({
-            title: rec.title,
-            latlng: new window.kakao.maps.LatLng(rec.location!.lat, rec.location!.lng),
-          }));
+          .map((rec, idx) => {
+            const baseLat = rec.location!.lat;
+            const baseLng = rec.location!.lng;
+            const off = offsets[idx % offsets.length];
+            return {
+              title: rec.title,
+              latlng: new window.kakao.maps.LatLng(baseLat + off.lat, baseLng + off.lng),
+            };
+          });
 
         if (positions.length === 0) return;
 
@@ -104,11 +115,8 @@ const Map = ({ visible, onClose, recommendations, appKey = DEFAULT_APP_KEY }: Ma
           {recommendations.map((rec) => (
             <div key={rec.benefitId} className="map-list-item">
               <p className="rec-title">{rec.title}</p>
-              {rec.location && (
-                <p className="rec-location">
-                  ({rec.location.lat.toFixed(4)}, {rec.location.lng.toFixed(4)})
-                </p>
-              )}
+              <span className="rec-chip">{rec.category}</span>
+              <p className="rec-summary">{rec.summary}</p>
             </div>
           ))}
           {recommendations.length === 0 && <p className="placeholder">표시할 위치가 없습니다.</p>}

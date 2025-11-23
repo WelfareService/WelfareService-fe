@@ -1,10 +1,10 @@
 import axios from 'axios';
 import type { RegisterUserPayload, User } from '../types/user';
-import type { ChatResponse } from '../types/chat';
+import type { ChatResponse, ConversationTurn } from '../types/chat';
 import type { MarkerResponse } from '../types/marker';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -23,8 +23,12 @@ export const fetchUser = async (id: number): Promise<User> => {
   return data;
 };
 
-export const sendChatMessage = async (userId: number, message: string): Promise<ChatResponse> => {
-  const { data } = await api.post<ChatResponse>('/recommendations/chat', { userId, message });
+export const sendChatMessage = async (
+  userId: number,
+  message: string,
+  history: ConversationTurn[],
+): Promise<ChatResponse> => {
+  const { data } = await api.post<ChatResponse>('/recommendations/chat', { userId, message, history });
   return data;
 };
 
